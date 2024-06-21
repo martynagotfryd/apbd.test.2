@@ -1,5 +1,7 @@
+using System.Transactions;
 using Microsoft.AspNetCore.Mvc;
 using test.DTOs;
+using test.Models;
 using test.Services;
 
 namespace test.Controllers;
@@ -39,5 +41,56 @@ public class CharacterController : ControllerBase
                 Amount = b.Amount
             }).ToList()
         }));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> AddItems(int idCharacter, List<AddItemsDTO> itemsDtos)
+    {
+        if (!await _dbService.DoesCharacterExist(idCharacter))
+        {
+            return NotFound("character doesnt exist");
+        }
+
+        var character = await _dbService.GetItemById(idCharacter);
+        var currWeight = character.CurrWeight;
+        
+        var items = new List<Backpack>();
+
+        foreach (var newItem in itemsDtos)
+        {
+            
+            if (!await _dbService.DoesItemExist(newItem.Id))
+            {
+                return NotFound("Item doesnt exist");
+            }
+
+            var item = await _dbService.GetCharById(newItem.Id);
+            
+            if (currWeight <= character.MaxWeight)
+            {
+                items.Add(new Backpack()
+                {
+                    IdCharacter = idCharacter,
+                    Amount = newItem.Amount,
+                    IdItem = newItem.Id
+                });
+                currWeight += item.Weight;
+            } else
+            {
+                return BadRequest("Items weight too much");
+            }
+        }
+        
+        
+        using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+        {
+            await _dbService.AddItems(items);
+            // await _dbService.UpdateWeigt(idCharacter, currWeight);
+            
+            
+            scope.Complete();
+        }
+
+        return Created();
     }
 }
