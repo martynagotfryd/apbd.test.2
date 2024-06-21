@@ -10,8 +10,8 @@ public interface IDbService
     Task<bool> DoesItemExist(int id);
     Task<Character> GetItemById(int id);
     Task<Item> GetCharById(int id);
-    // Task UpdateWeigt(int id, int newWeight);
-    // Task<Backpack?> DoesBackpackExisr(int idChar, int idItem);
-    // Task UpdateAmount(int idChar, int idItem, int amount);
+    Task UpdateWeigt(int id, int newWeight);
+    Task<bool> DoesBackpackExisr(int idChar, int idItem);
+    Task UpdateAmount(int idChar, int idItem, int amount);
 
 }

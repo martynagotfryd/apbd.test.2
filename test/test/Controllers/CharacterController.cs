@@ -56,6 +56,8 @@ public class CharacterController : ControllerBase
         
         var items = new List<Backpack>();
 
+        Item item = null;
+
         foreach (var newItem in itemsDtos)
         {
             
@@ -64,7 +66,12 @@ public class CharacterController : ControllerBase
                 return NotFound("Item doesnt exist");
             }
 
-            var item = await _dbService.GetCharById(newItem.Id);
+            item = await _dbService.GetCharById(newItem.Id);
+
+            if (await _dbService.DoesBackpackExisr(idCharacter, item.Id))
+            {
+                await _dbService.UpdateAmount(idCharacter, item.Id, newItem.Amount);
+            }
             
             if (currWeight <= character.MaxWeight)
             {
@@ -84,8 +91,9 @@ public class CharacterController : ControllerBase
         
         using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
         {
+            
             await _dbService.AddItems(items);
-            // await _dbService.UpdateWeigt(idCharacter, currWeight);
+            await _dbService.UpdateWeigt(idCharacter, currWeight);
             
             
             scope.Complete();
