@@ -71,9 +71,10 @@ public class CharacterController : ControllerBase
             if (await _dbService.DoesBackpackExisr(idCharacter, item.Id))
             {
                 await _dbService.UpdateAmount(idCharacter, item.Id, newItem.Amount);
+                currWeight +=item.Weight*newItem.Amount;
             }
             
-            if (currWeight <= character.MaxWeight)
+            else if (currWeight <= character.MaxWeight)
             {
                 items.Add(new Backpack()
                 {
@@ -81,7 +82,7 @@ public class CharacterController : ControllerBase
                     Amount = newItem.Amount,
                     IdItem = newItem.Id
                 });
-                currWeight += item.Weight;
+                currWeight += item.Weight*newItem.Amount;
             } else
             {
                 return BadRequest("Items weight too much");
